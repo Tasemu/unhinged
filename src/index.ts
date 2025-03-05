@@ -2,6 +2,7 @@ import './lib/setup';
 
 import { LogLevel, SapphireClient } from '@sapphire/framework';
 import { GatewayIntentBits } from 'discord.js';
+import { prisma } from './client';
 
 const client = new SapphireClient({
 	defaultPrefix: '!',
@@ -9,14 +10,23 @@ const client = new SapphireClient({
 	logger: {
 		level: LogLevel.Debug
 	},
-	intents: [GatewayIntentBits.DirectMessages, GatewayIntentBits.GuildMessages, GatewayIntentBits.Guilds, GatewayIntentBits.MessageContent],
+	intents: [
+		GatewayIntentBits.DirectMessages,
+		GatewayIntentBits.GuildMessages,
+		GatewayIntentBits.Guilds,
+		GatewayIntentBits.MessageContent,
+		GatewayIntentBits.GuildMembers
+	],
 	loadMessageCommandListeners: true
 });
 
 const main = async () => {
 	try {
 		client.logger.info('Logging in');
-		await client.login();
+		await client.login().finally(async () => {
+			// Close Prisma connection when bot shuts down
+			await prisma.$disconnect();
+		});
 		client.logger.info('logged in');
 	} catch (error) {
 		client.logger.fatal(error);

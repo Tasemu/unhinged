@@ -3,7 +3,8 @@
 	"compilerOptions": {
 		"rootDir": "src",
 		"outDir": "dist",
-		"tsBuildInfoFile": "dist/.tsbuildinfo"
+		"tsBuildInfoFile": "dist/.tsbuildinfo",
+		"types": ["@prisma/client"]
 	},
-	"include": ["src"]
+	"include": ["src", "prisma/**/*"]
 }

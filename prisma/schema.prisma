@@ -17,5 +17,6 @@ model TrialStart {
   id        String   @id @default(cuid())
   userId    String   @unique
   guildId   String
-  startTime DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

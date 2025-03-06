@@ -21,13 +21,10 @@ export class TrialMemberAddListener extends Listener<typeof Events.GuildMemberUp
 
 		try {
 			// Store in database
-			await prisma.trialStart.upsert({
-				where: { userId: newMember.id },
-				update: { startTime: new Date() },
-				create: {
+			await prisma.trialStart.create({
+				data: {
 					userId: newMember.id,
-					guildId: newMember.guild.id,
-					startTime: new Date()
+					guildId: newMember.guild.id
 				}
 			});
 

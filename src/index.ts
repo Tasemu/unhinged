@@ -1,4 +1,5 @@
 import './lib/setup';
+import '@sapphire/plugin-scheduled-tasks/register';
 
 import { LogLevel, SapphireClient } from '@sapphire/framework';
 import { GatewayIntentBits } from 'discord.js';
@@ -17,7 +18,15 @@ const client = new SapphireClient({
 		GatewayIntentBits.MessageContent,
 		GatewayIntentBits.GuildMembers
 	],
-	loadMessageCommandListeners: true
+	loadMessageCommandListeners: true,
+	tasks: {
+		bull: {
+			connection: {
+				host: 'localhost',
+				port: 6379
+			}
+		}
+	}
 });
 
 const main = async () => {

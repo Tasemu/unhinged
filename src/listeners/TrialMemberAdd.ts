@@ -11,11 +11,12 @@ export class TrialMemberAddListener extends Listener<typeof Events.GuildMemberUp
 	}
 
 	public async run(oldMember: GuildMember, newMember: GuildMember) {
+		this.container.logger.debug('TrialMemberAddListener');
 		// Configure your trial role ID here
-		const TRIAL_ROLE_ID = 'YOUR_TRIAL_ROLE_ID_HERE';
+		const TRIAL_ROLE_ID = 'Trial';
 
 		// Check if trial role was added
-		const addedRoles = newMember.roles.cache.difference(oldMember.roles.cache).filter((role) => role.id === TRIAL_ROLE_ID);
+		const addedRoles = newMember.roles.cache.difference(oldMember.roles.cache).filter((role) => role.name === TRIAL_ROLE_ID);
 
 		if (addedRoles.size === 0) return;
 

@@ -9,8 +9,7 @@ export class TrialCheckTask extends ScheduledTask {
 		super(context, {
 			...options,
 			name: 'trialCheck',
-			// interval: 3600000 // 1 hour
-			interval: 60000 // 1 minute
+			interval: 3600000 // 1 hour
 		});
 	}
 

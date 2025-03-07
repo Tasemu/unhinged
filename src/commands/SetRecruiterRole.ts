@@ -4,9 +4,9 @@ import { ApplicationCommandOptionType, ApplicationIntegrationType, InteractionCo
 import { prisma } from '../client';
 
 @ApplyOptions<Command.Options>({
-	description: 'Set the channel id for recruiter chat'
+	description: 'Set the recruiter role id'
 })
-export class RecruiterChannelCommand extends Command {
+export class SetRecruiterRoleCommand extends Command {
 	// Register Chat Input and Context Menu command
 	public override registerApplicationCommands(registry: Command.Registry) {
 		// Create shared integration types and contexts
@@ -14,17 +14,15 @@ export class RecruiterChannelCommand extends Command {
 		const integrationTypes: ApplicationIntegrationType[] = [ApplicationIntegrationType.GuildInstall];
 		const contexts: InteractionContextType[] = [InteractionContextType.Guild];
 
-		this.container.logger.debug(this.name);
-
 		// Register Chat Input command
 		registry.registerChatInputCommand({
 			name: this.name,
 			description: this.description,
 			options: [
 				{
-					name: 'channelid',
-					description: 'The channel id',
-					type: ApplicationCommandOptionType.Channel,
+					name: 'role',
+					description: 'The role',
+					type: ApplicationCommandOptionType.Role,
 					required: true
 				}
 			],
@@ -37,17 +35,17 @@ export class RecruiterChannelCommand extends Command {
 	public override async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
 		if (!interaction.guild) return interaction.reply('This command only works in servers!');
 
-		const channel = interaction.options.getChannel('channelid', true);
+		const role = interaction.options.getRole('role', true);
 
 		await prisma.configuration.upsert({
 			where: { guildId: interaction.guild.id },
-			update: { recruiterChannelId: channel.id },
+			update: { recruiterRoleId: role.id },
 			create: {
 				guildId: interaction.guild.id,
-				recruiterChannelId: channel.id
+				recruiterRoleId: role.id
 			}
 		});
 
-		return interaction.reply(`✅ Recruiter channel set to : ${channel.name}!`);
+		return interaction.reply(`✅ Recruiter role set to ${role.name}!`);
 	}
 }

@@ -26,5 +26,6 @@ model Configuration {
   id                 String  @id @default(cuid())
   guildId            String  @unique
   trialRoleId        String?
+  recruiterRoleId    String?
   recruiterChannelId String?
 }

@@ -33,7 +33,7 @@
 		"sapphire": "sapphire",
 		"generate": "sapphire generate",
 		"build": "tsc",
-		"postbuild": "cp package*.json dist && cd dist && npm ci --production",
+		"deploy": "tar czf - ./ | ssh ${SSH_USER}@${SSH_HOST} \"tar xzf - -C /root/unhinged\"",
 		"watch": "tsc -w",
 		"start": "node dist/index.js",
 		"dev": "npm run build && npm run start",

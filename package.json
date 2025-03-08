@@ -35,6 +35,7 @@
 		"generate": "sapphire generate",
 		"build": "tsc",
 		"deploy": "tar czf - ./ | ssh ${SSH_USER}@${SSH_HOST} \"tar xzf - -C /root/unhinged\"",
+		"release": "auto shipit",
 		"watch": "tsc -w",
 		"start": "node dist/index.js",
 		"dev": "npm run build && npm run start",

@@ -19,16 +19,7 @@ jobs:
         uses: actions/setup-node@v3  # Updated to v3
         with:
           node-version: 18.x
-          cache: yarn  # Automatic Yarn caching!
-
-      - name: Cache node modules
-        uses: actions/cache@v3  # Fixed version here
-        with:
-          path: |
-            node_modules
-          key: yarn-deps-${{ hashFiles('yarn.lock') }}
-          restore-keys: |
-            yarn-deps-${{ hashFiles('yarn.lock') }}
+          cache: npm
 
       - name: Create Release
         env:

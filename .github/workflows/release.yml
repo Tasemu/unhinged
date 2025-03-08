@@ -10,22 +10,24 @@ jobs:
     if: "!contains(github.event.head_commit.message, 'ci skip') && !contains(github.event.head_commit.message, 'skip ci')"
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4  # Also update checkout action
+        uses: actions/checkout@v4
 
       - name: Prepare repository
-        run: git fetch --unshallow --tags
+        run: git fetch --unshallow --tags  # Only needed if you require full git history/tags
 
       - name: Use Node.js 18.x
-        uses: actions/setup-node@v3  # Updated to v3
+        uses: actions/setup-node@v3
         with:
           node-version: 18.x
-          cache: npm
+          # Remove cache setting if you don't need npm/yarn caching
+
+      - name: Install dependencies
+        run: npm ci  # Or 'npm install' if you don't have package-lock.json
+
+      - name: Build project
+        run: npm run build
 
       - name: Create Release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: |
-          yarn install --frozen-lockfile
-          yarn build
-          npx auto shipit
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Only needed for GitHub releases
+        run: npx auto shipit

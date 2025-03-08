@@ -21,11 +21,11 @@ jobs:
           node-version: 18.x
           # Remove cache setting if you don't need npm/yarn caching
 
-      - name: Install dependencies
-        run: npm ci  # Or 'npm install' if you don't have package-lock.json
-
-      - name: Build project
-        run: npm run build
+      - name: git-setup
+        run: |
+          git --version
+          git config user.name "GitHub Actions Bot"
+          git config user.email "<>"
 
       - name: Create Release
         env:

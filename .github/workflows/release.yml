@@ -30,4 +30,4 @@ jobs:
       - name: Create Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Only needed for GitHub releases
-        run: npx auto shipit --no-npm
+        run: npx auto shipit

@@ -29,3 +29,12 @@ model Configuration {
   recruiterRoleId    String?
   recruiterChannelId String?
 }
+
+model LootSplitSession {
+  id            String   @id @default(cuid())
+  guildId       String
+  silver        Int
+  donated       Int
+  screenshotUrl String   @db.Text // Changed to TEXT type for unlimited length
+  expiresAt     DateTime
+}

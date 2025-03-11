@@ -6,7 +6,7 @@ import { prisma } from '../client';
 @ApplyOptions<Command.Options>({
 	description: 'Set the channel id for recruiter chat'
 })
-export class RecruiterChannelCommand extends Command {
+export class SetRecruiterChannelCommand extends Command {
 	// Register Chat Input and Context Menu command
 	public override registerApplicationCommands(registry: Command.Registry) {
 		// Create shared integration types and contexts

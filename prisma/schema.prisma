@@ -38,7 +38,7 @@ model LootSplitSession {
   silver        Int
   donated       Int
   screenshotUrl String   @db.Text // Changed to TEXT type for unlimited length
-  participants  String? // List of user IDs separated by commas
+  participants  String?  @db.Text // List of user IDs separated by commas
   creatorId     String // ID of user who created the split
   expiresAt     DateTime
 }

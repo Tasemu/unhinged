@@ -73,29 +73,30 @@ export class DepositPayoutBalanceCommand extends Command {
 			});
 		}
 
-		const payoutAccount = await prisma.payoutAccount.findUnique({
-			where: {
-				userId: user.id
-			}
-		});
-
-		if (!payoutAccount) {
-			return interaction.reply({
-				content: `<@${user.id}> does not have a payout account!`,
-				flags: [MessageFlags.Ephemeral]
-			});
-		}
-
 		try {
-			await prisma.payoutAccount.update({
+			const account = await prisma.payoutAccount.upsert({
 				where: {
-					userId: payoutAccount.userId
+					userId: user.id
 				},
-				data: {
+				update: {
 					balance: {
 						increment: amount
 					}
+				},
+				create: {
+					userId: user.id,
+					balance: amount
 				}
+			});
+
+			return interaction.reply({
+				content: `Successfully deposit ${amount} silver into account for <@${user.id}>. New balance: ${new Intl.NumberFormat('en-US', {
+					style: 'currency',
+					currency: 'USD'
+				})
+					.format(account.balance)
+					.replace('$', '')
+					.trim()} silver. Reason: ${reason || 'No reason provided'}`
 			});
 		} catch (error) {
 			return interaction.reply({
@@ -103,15 +104,5 @@ export class DepositPayoutBalanceCommand extends Command {
 				flags: [MessageFlags.Ephemeral]
 			});
 		}
-
-		return interaction.reply({
-			content: `Successfully deposit ${amount} silver into account for <@${user.id}>. New balance: ${new Intl.NumberFormat('en-US', {
-				style: 'currency',
-				currency: 'USD'
-			})
-				.format(payoutAccount.balance - amount)
-				.replace('$', '')
-				.trim()} silver. Reason: ${reason || 'No reason provided'}`
-		});
 	}
 }

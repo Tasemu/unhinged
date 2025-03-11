@@ -66,6 +66,7 @@ export class LootSplitCommand extends Command {
 				silver,
 				donated,
 				screenshotUrl: screenshot.url,
+				creatorId: interaction.user.id,
 				expiresAt: new Date(Date.now() + 15 * 60 * 1000) // 15 minutes
 			}
 		});
@@ -84,27 +85,5 @@ export class LootSplitCommand extends Command {
 			components: [actionRow],
 			ephemeral: true
 		});
-
-		// const user = interaction.options.getUser('user', true);
-
-		// const trial = await prisma.trialStart.findUnique({
-		// 	where: {
-		// 		userId: user.id
-		// 	}
-		// });
-
-		// if (!trial) {
-		// 	return interaction.reply(`<@${user.id}> is not on trial!`);
-		// }
-
-		// const trialEnd = new Date(trial.createdAt.getTime() + 14 * 24 * 60 * 60 * 1000); // 14 days
-		// const now = new Date();
-		// const timeRemaining = trialEnd.getTime() - now.getTime();
-
-		// const days = Math.floor(timeRemaining / (24 * 60 * 60 * 1000));
-		// const hours = Math.floor((timeRemaining % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
-		// const minutes = Math.floor((timeRemaining % (60 * 60 * 1000)) / (60 * 1000));
-
-		// return interaction.reply(`Trial for <@${user.id}> ends in ${days} days, ${hours} hours, and ${minutes} minutes`);
 	}
 }

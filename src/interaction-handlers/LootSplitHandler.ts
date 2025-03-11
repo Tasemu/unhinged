@@ -1,6 +1,6 @@
 // src/interaction-handlers/LootSplitHandler.ts
 import { InteractionHandler, InteractionHandlerTypes } from '@sapphire/framework';
-import type { UserSelectMenuInteraction } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, type UserSelectMenuInteraction } from 'discord.js';
 import { prisma } from '../client';
 
 export class LootSplitHandler extends InteractionHandler {
@@ -29,16 +29,33 @@ export class LootSplitHandler extends InteractionHandler {
 			});
 		}
 
+		// Get lootsplit modifier from configuration
+		const configuration = await prisma.configuration.findUnique({
+			where: { guildId: session.guildId }
+		});
+
+		if (!configuration || !configuration.lootSplitPercentModifier) {
+			this.container.logger.error('No configuration found for guild:', session.guildId);
+			return;
+		}
+
 		// Calculate split
 		const participants = interaction.users.size;
-		const individualShare = session.silver / participants;
+		const silverForGuild = Math.floor(session.silver * configuration.lootSplitPercentModifier);
+		const individualShare = silverForGuild / participants;
 
-		// TODO: Distribute silver to participants
-
-		// Cleanup session
-		await prisma.lootSplitSession.delete({
-			where: { id: sessionId }
+		await prisma.lootSplitSession.update({
+			where: { id: sessionId },
+			data: {
+				participants: interaction.users.map((user) => user.id).join(',')
+			}
 		});
+
+		// Create approval buttons
+		const approvalRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+			new ButtonBuilder().setCustomId(`lootsplit-approve:${sessionId}`).setLabel('Approve').setStyle(ButtonStyle.Success).setEmoji('✅'),
+			new ButtonBuilder().setCustomId(`lootsplit-reject:${sessionId}`).setLabel('Deny').setStyle(ButtonStyle.Secondary).setEmoji('❌')
+		);
 
 		// Update response
 		return interaction.reply({
@@ -51,7 +68,7 @@ export class LootSplitHandler extends InteractionHandler {
 				`- Individual Share: ${individualShare.toLocaleString()} silver`,
 				`[View Screenshot](${session.screenshotUrl})`
 			].join('\n'),
-			components: []
+			components: [approvalRow]
 		});
 	}
 }

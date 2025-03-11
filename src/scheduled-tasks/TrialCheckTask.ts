@@ -39,9 +39,9 @@ export class TrialCheckTask extends ScheduledTask {
 					continue;
 				}
 
-				this.container.logger.debug(`attempting to notify recruiter chat for ${trial.userId}`);
 				if (timeRemaining <= 24 * 60 * 60 * 1000 && timeRemaining > 0) {
 					this.container.logger.debug(`Trial for ${trial.userId} has ended`);
+					this.container.logger.debug(`attempting to notify recruiter chat for ${trial.userId}`);
 					// 24 hours remaining
 					const guild = this.container.client.guilds.cache.get(trial.guildId);
 					if (!guild) continue;

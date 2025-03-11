@@ -23,9 +23,30 @@ model TrialStart {
 }
 
 model Configuration {
-  id                 String  @id @default(cuid())
-  guildId            String  @unique
-  trialRoleId        String?
-  recruiterRoleId    String?
-  recruiterChannelId String?
+  id                       String  @id @default(cuid())
+  guildId                  String  @unique
+  trialRoleId              String?
+  recruiterRoleId          String?
+  recruiterChannelId       String?
+  lootSplitAuthRoleId      String?
+  lootSplitPercentModifier Float?
+}
+
+model LootSplitSession {
+  id            String   @id @default(cuid())
+  guildId       String
+  silver        Int
+  donated       Int
+  screenshotUrl String   @db.Text // Changed to TEXT type for unlimited length
+  participants  String? // List of user IDs separated by commas
+  creatorId     String // ID of user who created the split
+  expiresAt     DateTime
+}
+
+model PayoutAccount {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  balance   Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

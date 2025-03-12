@@ -101,7 +101,7 @@ export class LootSplitApprovalHandler extends InteractionHandler {
 			const participantIds = session.participants.split(',');
 
 			const silverForGuild = Math.floor(session.silver * configuration.lootSplitPercentModifier);
-			const individualShare = silverForGuild / participantIds.length;
+			const individualShare = silverForGuild / participantIds.length + session.donated / participantIds.length;
 
 			// Process payments
 			await prisma.$transaction([

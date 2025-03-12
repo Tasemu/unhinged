@@ -42,7 +42,7 @@ export class LootSplitHandler extends InteractionHandler {
 		// Calculate split
 		const participants = interaction.users.size;
 		const silverForGuild = Math.floor(session.silver * configuration.lootSplitPercentModifier);
-		const individualShare = silverForGuild / participants;
+		const individualShare = silverForGuild / participants + session.donated / participants;
 
 		await prisma.lootSplitSession.update({
 			where: { id: sessionId },
@@ -62,7 +62,7 @@ export class LootSplitHandler extends InteractionHandler {
 			content: [
 				`**Loot Split Results**`,
 				`- Total Silver: ${session.silver.toLocaleString()}`,
-				`- Guild Donation: ${session.donated.toLocaleString()}`,
+				`- Silver Bags: ${session.donated.toLocaleString()}`,
 				`- Participants: ${participants} members:`,
 				interaction.users.map((user) => `- <@${user.id}>`).join('\n'),
 				`- Individual Share: ${individualShare.toLocaleString()} silver`,

@@ -27,12 +27,14 @@
 		"@types/ws": "^8.5.13",
 		"auto": "^11.3.0",
 		"prettier": "^3.4.2",
+		"ts-node": "^10.9.2",
 		"tsc-watch": "^6.3.0",
 		"typescript": "~5.4.5"
 	},
 	"scripts": {
 		"sapphire": "sapphire",
 		"generate": "sapphire generate",
+		"seed": "node prisma/seeds/seed-albion-items.js",
 		"build": "tsc",
 		"deploy": "tar czf - ./ | ssh ${SSH_USER}@${SSH_HOST} \"tar xzf - -C /root/unhinged\"",
 		"release": "auto shipit",

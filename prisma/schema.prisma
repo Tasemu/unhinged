@@ -50,3 +50,13 @@ model PayoutAccount {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+model AlbionItem {
+  id          String   @id @default(cuid())
+  itemId      String   @unique
+  name        String
+  tier        Int
+  enchantment Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

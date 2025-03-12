@@ -32,8 +32,8 @@ export class LootSplitCommand extends Command {
 					required: true
 				},
 				{
-					name: 'donated',
-					description: 'The total silver donated to the guild from silver bags',
+					name: 'silverbags',
+					description: 'The total silver collected from silver bags',
 					type: ApplicationCommandOptionType.Number,
 					required: true
 				},
@@ -54,7 +54,7 @@ export class LootSplitCommand extends Command {
 		if (!interaction.guild) return interaction.reply('This command only works in servers!');
 
 		const silver = interaction.options.getNumber('silver', true);
-		const donated = interaction.options.getNumber('donated', true);
+		const donated = interaction.options.getNumber('silverbags', true);
 		const screenshot = interaction.options.getAttachment('screenshot', true);
 
 		this.container.logger.info(`Loot Split: ${silver} silver, ${donated} donated, ${screenshot.url}`);

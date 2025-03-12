@@ -16,7 +16,7 @@ export class WithdrawPayoutBalanceCommand extends Command {
 
 		// Register Chat Input command
 		registry.registerChatInputCommand({
-			name: 'widthdraw',
+			name: 'withdraw',
 			description: this.description,
 			options: [
 				{

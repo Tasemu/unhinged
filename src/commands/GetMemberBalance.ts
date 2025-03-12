@@ -1,13 +1,13 @@
 import { ApplyOptions } from '@sapphire/decorators';
 import { Command } from '@sapphire/framework';
-import { ApplicationCommandOptionType, ApplicationIntegrationType, InteractionContextType, PermissionFlagsBits } from 'discord.js';
+import { ApplicationCommandOptionType, ApplicationIntegrationType, InteractionContextType, MessageFlags, PermissionFlagsBits } from 'discord.js';
 import { prisma } from '../client';
 
 @ApplyOptions<Command.Options>({
-	description: 'Get the remaining trial time for a user',
+	description: 'Get the current balance of a guild members payout account',
 	requiredUserPermissions: [PermissionFlagsBits.ModerateMembers]
 })
-export class GetTrialStatusCommand extends Command {
+export class GetMemberBalanceCommand extends Command {
 	// Register Chat Input and Context Menu command
 	public override registerApplicationCommands(registry: Command.Registry) {
 		// Create shared integration types and contexts
@@ -22,7 +22,7 @@ export class GetTrialStatusCommand extends Command {
 			options: [
 				{
 					name: 'user',
-					description: 'The user to query',
+					description: 'The user to get the balance of',
 					type: ApplicationCommandOptionType.User,
 					required: true
 				}
@@ -38,24 +38,25 @@ export class GetTrialStatusCommand extends Command {
 
 		const user = interaction.options.getUser('user', true);
 
-		const trial = await prisma.trialStart.findUnique({
+		const payoutAccount = await prisma.payoutAccount.findUnique({
 			where: {
 				userId: user.id
 			}
 		});
 
-		if (!trial) {
-			return interaction.reply(`<@${user.id}> is not on trial!`);
+		if (!payoutAccount) {
+			return interaction.reply({
+				content: 'Member does not have a payout account set up.',
+				flags: [MessageFlags.Ephemeral]
+			});
 		}
 
-		const trialEnd = new Date(trial.createdAt.getTime() + 14 * 24 * 60 * 60 * 1000); // 14 days
-		const now = new Date();
-		const timeRemaining = trialEnd.getTime() - now.getTime();
-
-		const days = Math.floor(timeRemaining / (24 * 60 * 60 * 1000));
-		const hours = Math.floor((timeRemaining % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
-		const minutes = Math.floor((timeRemaining % (60 * 60 * 1000)) / (60 * 1000));
-
-		return interaction.reply(`Trial for <@${user.id}> ends in ${days} days, ${hours} hours, and ${minutes} minutes`);
+		return interaction.reply({
+			content: `Current balance for ${user.displayName} is ${new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })
+				.format(payoutAccount.balance)
+				.replace('$', '')
+				.trim()} silver`,
+			flags: [MessageFlags.Ephemeral]
+		});
 	}
 }

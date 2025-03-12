@@ -1,6 +1,15 @@
 import { ApplyOptions } from '@sapphire/decorators';
 import { Command } from '@sapphire/framework';
-import { ApplicationCommandOptionType, ApplicationIntegrationType, AutocompleteInteraction, InteractionContextType } from 'discord.js';
+import {
+	ActionRowBuilder,
+	ApplicationCommandOptionType,
+	ApplicationIntegrationType,
+	AutocompleteInteraction,
+	ButtonBuilder,
+	ButtonStyle,
+	InteractionContextType,
+	PermissionFlagsBits
+} from 'discord.js';
 import { prisma } from '../client';
 
 interface AlbionPrice {
@@ -11,7 +20,8 @@ interface AlbionPrice {
 }
 
 @ApplyOptions<Command.Options>({
-	description: 'Log a re-gear for a user'
+	description: 'Log a re-gear for a user',
+	requiredUserPermissions: [PermissionFlagsBits.Administrator]
 })
 export class RegearCommand extends Command {
 	// Register Chat Input and Context Menu command
@@ -122,13 +132,29 @@ export class RegearCommand extends Command {
 			// Calculate total cost
 			const totalCost = prices.reduce((sum, price) => sum + price.sell_price_min, 0);
 
+			// Create approval buttons
+			const approvalRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+				new ButtonBuilder()
+					.setCustomId(`regear-approve:${user.id}:${totalCost}`)
+					.setLabel('Approve')
+					.setStyle(ButtonStyle.Success)
+					.setEmoji('✅'),
+				new ButtonBuilder()
+					.setCustomId(`regear-reject:${user.id}:${totalCost}`)
+					.setLabel('Deny')
+					.setStyle(ButtonStyle.Secondary)
+					.setEmoji('❌')
+			);
+
 			return interaction.reply({
 				content: [
 					`**Regear Request for ${user.displayName}**`,
 					...itemLines,
+					`\n`,
 					`**Total Estimated Cost:** ${totalCost.toLocaleString()} silver`,
 					`_Prices from Thetford (Quality: Excellent)_`
-				].join('\n')
+				].join('\n'),
+				components: [approvalRow]
 			});
 		} catch (error) {
 			this.container.logger.error('Regear command failed:', error);

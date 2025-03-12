@@ -10,8 +10,8 @@ export class LootSplitApprovalHandler extends InteractionHandler {
 	}
 
 	public override async parse(interaction: ButtonInteraction) {
-		this.container.logger.debug(`Parsing loot split approval interaction with custom ID ${interaction.customId}`);
 		if (!interaction.customId.startsWith('lootsplit-')) return this.none();
+		this.container.logger.debug(`Parsing loot split approval interaction with custom ID ${interaction.customId}`);
 
 		const [action, sessionId] = interaction.customId.split(':');
 		if (!['lootsplit-approve', 'lootsplit-reject'].includes(action)) return this.none();

@@ -60,7 +60,7 @@ export class LootSplitHandler extends InteractionHandler {
 		// Update response
 		return interaction.reply({
 			content: [
-				`**Loot Split Results**`,
+				`**Loot Split Results: <@${interaction.user.id}>**`,
 				`- Total Silver: ${session.silver.toLocaleString()}`,
 				`- Silver Bags: ${session.donated.toLocaleString()}`,
 				`- Participants: ${participants} members:`,

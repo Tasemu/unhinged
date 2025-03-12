@@ -1,10 +1,11 @@
 import { ApplyOptions } from '@sapphire/decorators';
 import { Command } from '@sapphire/framework';
-import { ApplicationCommandOptionType, ApplicationIntegrationType, InteractionContextType } from 'discord.js';
+import { ApplicationCommandOptionType, ApplicationIntegrationType, InteractionContextType, PermissionFlagsBits } from 'discord.js';
 import { prisma } from '../client';
 
 @ApplyOptions<Command.Options>({
-	description: 'Set the role required for lootsplit approval'
+	description: 'Set the role required for lootsplit approval',
+	requiredUserPermissions: [PermissionFlagsBits.Administrator]
 })
 export class SetLootsplitAuthRoleCommand extends Command {
 	// Register Chat Input and Context Menu command

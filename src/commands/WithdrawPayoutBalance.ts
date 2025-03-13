@@ -87,7 +87,7 @@ export class WithdrawPayoutBalanceCommand extends Command {
 		}
 
 		try {
-			await prisma.payoutAccount.update({
+			const newBalance = await prisma.payoutAccount.update({
 				where: {
 					userId: payoutAccount.userId
 				},
@@ -97,15 +97,15 @@ export class WithdrawPayoutBalanceCommand extends Command {
 					}
 				}
 			});
+
+			return interaction.reply({
+				content: `Successfully withdrew ${amount} silver from <@${user.id}>. New balance: ${newBalance.balance.toLocaleString()} silver. Reason: ${reason || 'No reason provided'}`
+			});
 		} catch (error) {
 			return interaction.reply({
 				content: `Failed to withdraw silver from <@${user.id}>`,
 				flags: [MessageFlags.Ephemeral]
 			});
 		}
-
-		return interaction.reply({
-			content: `Successfully withdrew ${amount} silver from <@${user.id}>. New balance: ${payoutAccount.balance.toLocaleString()} silver. Reason: ${reason || 'No reason provided'}`
-		});
 	}
 }

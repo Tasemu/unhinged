@@ -1,11 +1,10 @@
 import { ApplyOptions } from '@sapphire/decorators';
 import { Command } from '@sapphire/framework';
-import { ApplicationIntegrationType, InteractionContextType, PermissionFlagsBits } from 'discord.js';
+import { ApplicationIntegrationType, InteractionContextType } from 'discord.js';
 import { prisma } from '../client';
 
 @ApplyOptions<Command.Options>({
-	description: 'Get the top 10 members with the highest balance in the guild',
-	requiredUserPermissions: [PermissionFlagsBits.ModerateMembers]
+	description: 'Get the top 10 members with the highest balance in the guild'
 })
 export class GetLeaderboardCommand extends Command {
 	// Register Chat Input and Context Menu command

@@ -90,13 +90,7 @@ export class DepositPayoutBalanceCommand extends Command {
 			});
 
 			return interaction.reply({
-				content: `Successfully deposit ${amount} silver into account for <@${user.id}>. New balance: ${new Intl.NumberFormat('en-US', {
-					style: 'currency',
-					currency: 'USD'
-				})
-					.format(account.balance)
-					.replace('$', '')
-					.trim()} silver. Reason: ${reason || 'No reason provided'}`
+				content: `Successfully deposit ${amount} silver into account for <@${user.id}>. New balance: ${account.balance.toLocaleString()} silver. Reason: ${reason || 'No reason provided'}`
 			});
 		} catch (error) {
 			return interaction.reply({

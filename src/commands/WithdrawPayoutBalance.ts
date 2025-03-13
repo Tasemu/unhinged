@@ -105,13 +105,7 @@ export class WithdrawPayoutBalanceCommand extends Command {
 		}
 
 		return interaction.reply({
-			content: `Successfully withdrew ${amount} silver from <@${user.id}>. New balance: ${new Intl.NumberFormat('en-US', {
-				style: 'currency',
-				currency: 'USD'
-			})
-				.format(payoutAccount.balance - amount)
-				.replace('$', '')
-				.trim()} silver. Reason: ${reason || 'No reason provided'}`
+			content: `Successfully withdrew ${amount} silver from <@${user.id}>. New balance: ${payoutAccount.balance.toLocaleString()} silver. Reason: ${reason || 'No reason provided'}`
 		});
 	}
 }

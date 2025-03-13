@@ -43,10 +43,7 @@ export class GetPayoutBalanceCommand extends Command {
 		}
 
 		return interaction.reply({
-			content: `Your current balance is ${new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })
-				.format(payoutAccount.balance)
-				.replace('$', '')
-				.trim()} silver`,
+			content: `Your current balance is ${payoutAccount.balance.toLocaleString()} silver`,
 			flags: [MessageFlags.Ephemeral]
 		});
 	}

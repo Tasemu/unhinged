@@ -52,10 +52,7 @@ export class GetMemberBalanceCommand extends Command {
 		}
 
 		return interaction.reply({
-			content: `Current balance for ${user.displayName} is ${new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })
-				.format(payoutAccount.balance)
-				.replace('$', '')
-				.trim()} silver`,
+			content: `Current balance for ${user.displayName} is ${payoutAccount.balance.toLocaleString()} silver`,
 			flags: [MessageFlags.Ephemeral]
 		});
 	}

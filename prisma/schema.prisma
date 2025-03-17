@@ -30,6 +30,7 @@ model Configuration {
   recruiterChannelId       String?
   lootSplitAuthRoleId      String?
   lootSplitPercentModifier Float?
+  buybackPercentModifier   Float?
 }
 
 model LootSplitSession {

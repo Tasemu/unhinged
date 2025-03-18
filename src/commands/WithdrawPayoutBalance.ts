@@ -69,7 +69,7 @@ export class WithdrawPayoutBalanceCommand extends Command {
 		if (!roles.has(configuration.lootSplitAuthRoleId)) {
 			return interaction.reply({
 				content: '❌ Only officers can initiate a balance withdraw!',
-				ephemeral: true
+				flags: [MessageFlags.Ephemeral]
 			});
 		}
 

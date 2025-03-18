@@ -1,5 +1,14 @@
 import { InteractionHandler, InteractionHandlerTypes } from '@sapphire/framework';
-import { ActionRowBuilder, ButtonBuilder, ButtonComponent, ButtonInteraction, ComponentType, GuildMember, GuildMemberRoleManager } from 'discord.js';
+import {
+	ActionRowBuilder,
+	ButtonBuilder,
+	ButtonComponent,
+	ButtonInteraction,
+	ComponentType,
+	GuildMember,
+	GuildMemberRoleManager,
+	MessageFlags
+} from 'discord.js';
 import { prisma } from '../client';
 
 export class RegearApprovalHandler extends InteractionHandler {
@@ -36,7 +45,7 @@ export class RegearApprovalHandler extends InteractionHandler {
 			this.container.logger.error('No configuration found for guild:', data.member.guild.id);
 			return interaction.reply({
 				content: '❌ Lootsplit auth role not set',
-				ephemeral: true
+				flags: [MessageFlags.Ephemeral]
 			});
 		}
 
@@ -45,7 +54,7 @@ export class RegearApprovalHandler extends InteractionHandler {
 		if (!roles.has(configuration.lootSplitAuthRoleId)) {
 			return interaction.reply({
 				content: '❌ Only officers can approve splits!',
-				ephemeral: true
+				flags: [MessageFlags.Ephemeral]
 			});
 		}
 

@@ -1,5 +1,14 @@
 import { InteractionHandler, InteractionHandlerTypes } from '@sapphire/framework';
-import { ActionRowBuilder, ButtonBuilder, ButtonComponent, ButtonInteraction, ComponentType, GuildMember, GuildMemberRoleManager } from 'discord.js';
+import {
+	ActionRowBuilder,
+	ButtonBuilder,
+	ButtonComponent,
+	ButtonInteraction,
+	ComponentType,
+	GuildMember,
+	GuildMemberRoleManager,
+	MessageFlags
+} from 'discord.js';
 import { prisma } from '../client';
 
 export class LootSplitApprovalHandler extends InteractionHandler {
@@ -32,9 +41,9 @@ export class LootSplitApprovalHandler extends InteractionHandler {
 		});
 
 		if (!session) {
-			return interaction.update({
+			return interaction.reply({
 				content: '❌ Split no longer exists',
-				components: []
+				flags: [MessageFlags.Ephemeral]
 			});
 		}
 
@@ -47,7 +56,7 @@ export class LootSplitApprovalHandler extends InteractionHandler {
 			this.container.logger.error('No configuration found for guild:', session.guildId);
 			return interaction.reply({
 				content: '❌ Lootsplit auth role not set',
-				ephemeral: true
+				flags: [MessageFlags.Ephemeral]
 			});
 		}
 
@@ -56,7 +65,7 @@ export class LootSplitApprovalHandler extends InteractionHandler {
 		if (!roles.has(configuration.lootSplitAuthRoleId)) {
 			return interaction.reply({
 				content: '❌ Only officers can approve splits!',
-				ephemeral: true
+				flags: [MessageFlags.Ephemeral]
 			});
 		}
 
@@ -92,9 +101,9 @@ export class LootSplitApprovalHandler extends InteractionHandler {
 
 		if (data.action === 'lootsplit-approve') {
 			if (!session.participants) {
-				return interaction.update({
+				return interaction.reply({
 					content: '❌ No participants found',
-					components: []
+					flags: [MessageFlags.Ephemeral]
 				});
 			}
 

@@ -1,6 +1,6 @@
 import { ApplyOptions } from '@sapphire/decorators';
 import { Command } from '@sapphire/framework';
-import { ApplicationIntegrationType, InteractionContextType } from 'discord.js';
+import { ApplicationIntegrationType, InteractionContextType, MessageFlags } from 'discord.js';
 import { prisma } from '../client';
 
 @ApplyOptions<Command.Options>({
@@ -35,7 +35,7 @@ export class GetLeaderboardCommand extends Command {
 			if (!payoutAccounts.length) {
 				return interaction.reply({
 					content: 'No payout accounts found in this guild',
-					ephemeral: true
+					flags: [MessageFlags.Ephemeral]
 				});
 			}
 
@@ -78,7 +78,7 @@ export class GetLeaderboardCommand extends Command {
 			this.container.logger.error('Leaderboard command failed:', error);
 			return interaction.reply({
 				content: 'Failed to fetch leaderboard. Please try again later.',
-				ephemeral: true
+				flags: [MessageFlags.Ephemeral]
 			});
 		}
 	}

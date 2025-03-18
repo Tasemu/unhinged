@@ -5,6 +5,7 @@ import {
 	ApplicationCommandOptionType,
 	ApplicationIntegrationType,
 	InteractionContextType,
+	MessageFlags,
 	UserSelectMenuBuilder
 } from 'discord.js';
 import { prisma } from '../client';
@@ -83,7 +84,7 @@ export class LootSplitCommand extends Command {
 		return interaction.reply({
 			content: '**Loot Split Setup**\nSelect participants:',
 			components: [actionRow],
-			ephemeral: true
+			flags: [MessageFlags.Ephemeral]
 		});
 	}
 }

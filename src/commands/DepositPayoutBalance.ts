@@ -69,7 +69,7 @@ export class DepositPayoutBalanceCommand extends Command {
 		if (!roles.has(configuration.lootSplitAuthRoleId)) {
 			return interaction.reply({
 				content: '❌ Only officers can initiate a balance deposit!',
-				ephemeral: true
+				flags: [MessageFlags.Ephemeral]
 			});
 		}
 

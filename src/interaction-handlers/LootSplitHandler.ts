@@ -1,6 +1,6 @@
 // src/interaction-handlers/LootSplitHandler.ts
 import { InteractionHandler, InteractionHandlerTypes } from '@sapphire/framework';
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, type UserSelectMenuInteraction } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags, type UserSelectMenuInteraction } from 'discord.js';
 import { prisma } from '../client';
 
 export class LootSplitHandler extends InteractionHandler {
@@ -25,7 +25,7 @@ export class LootSplitHandler extends InteractionHandler {
 		if (!session || session.expiresAt < new Date()) {
 			return interaction.reply({
 				content: 'Session expired. Please start over.',
-				ephemeral: true
+				flags: [MessageFlags.Ephemeral]
 			});
 		}
 
@@ -61,6 +61,7 @@ export class LootSplitHandler extends InteractionHandler {
 		return interaction.reply({
 			content: [
 				`**Loot Split Results: <@${interaction.user.id}>**`,
+				`- Session ID: ${sessionId}`,
 				`- Total Silver: ${session.silver.toLocaleString()}`,
 				`- Silver Bags: ${session.donated.toLocaleString()}`,
 				`- Participants: ${participants} members:`,

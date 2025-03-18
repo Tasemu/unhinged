@@ -12,7 +12,6 @@ export class TrialCheckTask extends ScheduledTask {
 	}
 
 	public async run() {
-		this.container.logger.debug('Checking trial periods');
 		const trials = await prisma.trialStart.findMany();
 
 		for (const trial of trials) {
@@ -62,11 +61,6 @@ export class TrialCheckTask extends ScheduledTask {
 					await prisma.trialStart.delete({
 						where: { userId: trial.userId }
 					});
-				} else {
-					const days = Math.floor(timeRemaining / (24 * 60 * 60 * 1000));
-					const hours = Math.floor((timeRemaining % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
-					const minutes = Math.floor((timeRemaining % (60 * 60 * 1000)) / (60 * 1000));
-					this.container.logger.debug(`Trial for ${trial.userId} ends in ${days} days, ${hours} hours, and ${minutes} minutes`);
 				}
 			} catch (error) {
 				this.container.logger.error(`Error processing trial for ${trial.userId}:`, error);

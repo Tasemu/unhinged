@@ -7,6 +7,7 @@ import {
 	ButtonBuilder,
 	ButtonStyle,
 	InteractionContextType,
+	MessageFlags,
 	PermissionFlagsBits
 } from 'discord.js';
 import { prisma } from '../client';
@@ -72,7 +73,7 @@ export class BuybackCommand extends Command {
 			this.container.logger.error('Buyback command failed: Configuration not found');
 			return interaction.reply({
 				content: 'The buyback modifier has not been set for this server. Please ask an administrator to set it.',
-				ephemeral: true
+				flags: [MessageFlags.Ephemeral]
 			});
 		}
 

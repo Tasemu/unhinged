@@ -8,6 +8,7 @@ import {
 	ButtonBuilder,
 	ButtonStyle,
 	InteractionContextType,
+	MessageFlags,
 	PermissionFlagsBits
 } from 'discord.js';
 import { prisma } from '../client';
@@ -160,7 +161,7 @@ export class RegearCommand extends Command {
 			this.container.logger.error('Regear command failed:', error);
 			return interaction.reply({
 				content: 'Failed to fetch price data. Please try again later.',
-				ephemeral: true
+				flags: [MessageFlags.Ephemeral]
 			});
 		}
 	}

@@ -85,6 +85,7 @@ export class DepositPayoutBalanceCommand extends Command {
 				},
 				create: {
 					userId: user.id,
+					guildId: interaction.guild.id,
 					balance: amount
 				}
 			});

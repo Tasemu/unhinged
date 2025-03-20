@@ -1,30 +1,37 @@
 // src/interaction-handlers/LootSplitHandler.ts
 import { InteractionHandler, InteractionHandlerTypes } from '@sapphire/framework';
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags, type UserSelectMenuInteraction } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, MessageFlags } from 'discord.js';
 import { prisma } from '../client';
 
 export class LootSplitHandler extends InteractionHandler {
 	public constructor(context: InteractionHandler.LoaderContext, options: InteractionHandler.Options) {
 		super(context, {
 			...options,
-			interactionHandlerType: InteractionHandlerTypes.SelectMenu
+			interactionHandlerType: InteractionHandlerTypes.Button
 		});
 	}
 
-	public override parse(interaction: UserSelectMenuInteraction) {
-		if (!interaction.customId.startsWith('lootsplit:')) return this.none();
+	public override parse(interaction: ButtonInteraction) {
+		if (!interaction.customId.startsWith('lootsplit-confirm:')) return this.none();
 		return this.some(interaction.customId.split(':')[1]);
 	}
 
-	public async run(interaction: UserSelectMenuInteraction, sessionId: string) {
+	public async run(interaction: ButtonInteraction, sessionId: string) {
 		// Get session from database
 		const session = await prisma.lootSplitSession.findUnique({
 			where: { id: sessionId }
 		});
 
-		if (!session || session.expiresAt < new Date()) {
+		if (!session) {
 			return interaction.reply({
-				content: 'Session expired. Please start over.',
+				content: 'Lootsplit does not exist',
+				flags: [MessageFlags.Ephemeral]
+			});
+		}
+
+		if (!session.participants) {
+			return interaction.reply({
+				content: 'No participants found',
 				flags: [MessageFlags.Ephemeral]
 			});
 		}
@@ -40,16 +47,9 @@ export class LootSplitHandler extends InteractionHandler {
 		}
 
 		// Calculate split
-		const participants = interaction.users.size;
+		const participants = session.participants.split(',');
 		const silverForGuild = Math.floor(session.silver * configuration.lootSplitPercentModifier);
-		const individualShare = silverForGuild / participants + session.donated / participants;
-
-		await prisma.lootSplitSession.update({
-			where: { id: sessionId },
-			data: {
-				participants: interaction.users.map((user) => user.id).join(',')
-			}
-		});
+		const individualShare = silverForGuild / participants.length + session.donated / participants.length;
 
 		// Create approval buttons
 		const approvalRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
@@ -64,8 +64,9 @@ export class LootSplitHandler extends InteractionHandler {
 				`- Session ID: ${sessionId}`,
 				`- Total Silver: ${session.silver.toLocaleString()}`,
 				`- Silver Bags: ${session.donated.toLocaleString()}`,
-				`- Participants: ${participants} members:`,
-				interaction.users.map((user) => `- <@${user.id}>`).join('\n'),
+				`- Participants: ${participants.length}`,
+				`- members:`,
+				participants.map((id) => `- <@${id}>`).join('\n'),
 				`- Individual Share: ${individualShare.toLocaleString()} silver`,
 				`[View Screenshot](${session.screenshotUrl})`
 			].join('\n'),

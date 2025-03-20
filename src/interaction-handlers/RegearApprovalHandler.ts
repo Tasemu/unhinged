@@ -95,7 +95,7 @@ export class RegearApprovalHandler extends InteractionHandler {
 			await prisma.payoutAccount.upsert({
 				where: { userId: data.userId },
 				update: { balance: { increment: silverForRegear } },
-				create: { userId: data.userId, balance: silverForRegear }
+				create: { userId: data.userId, balance: silverForRegear, guildId: data.member.guild.id }
 			});
 		}
 

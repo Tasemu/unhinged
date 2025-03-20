@@ -114,27 +114,22 @@ export class LootSplitApprovalHandler extends InteractionHandler {
 
 			// Process payments
 			await prisma.$transaction([
+				prisma.lootSplitSession.update({
+					where: { id: data.sessionId },
+					data: { approved: true }
+				}),
 				...participantIds.map((userId: string) =>
 					prisma.payoutAccount.upsert({
 						where: { userId },
 						update: { balance: { increment: individualShare } },
-						create: { userId, balance: individualShare }
+						create: { userId, balance: individualShare, guildId: session.guildId }
 					})
-				),
-				prisma.lootSplitSession.delete({ where: { id: session.id } })
+				)
 			]);
-
-			return interaction.update({
-				components: updatedComponents
-			});
-		} else {
-			await prisma.lootSplitSession.delete({
-				where: { id: data.sessionId }
-			});
-
-			return interaction.update({
-				components: updatedComponents
-			});
 		}
+
+		return interaction.update({
+			components: updatedComponents
+		});
 	}
 }

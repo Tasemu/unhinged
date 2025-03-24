@@ -77,6 +77,7 @@ export class LootSplitCommand extends Command {
 		const selectMenu = new UserSelectMenuBuilder()
 			.setCustomId(`lootsplit-select:${session.id}`)
 			.setPlaceholder('Select participants')
+			.addDefaultUsers([interaction.user.id])
 			.setMinValues(1)
 			.setMaxValues(25);
 

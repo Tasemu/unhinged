@@ -13,12 +13,20 @@ import {
 } from 'discord.js';
 import { prisma } from '../client';
 
-interface AlbionPrice {
-	item_id: string;
-	city: string;
-	sell_price_min: number;
-	sell_price_min_date: string;
+interface AlbionDataClientMarketData {
+	item_count: number;
+	avg_price: number;
+	timestamp: string;
 }
+
+interface AlbionDataClientMarket {
+	location: string;
+	item_id: string;
+	quality: number;
+	data: AlbionDataClientMarketData[];
+}
+
+type AlbionDataClientReponse = AlbionDataClientMarket[];
 
 @ApplyOptions<Command.Options>({
 	description: 'Log a re-gear for a user',
@@ -102,36 +110,45 @@ export class RegearCommand extends Command {
 		const itemIds = Object.values(items).filter(Boolean) as string[];
 
 		try {
+			let totalCost = 0;
+
 			// Fetch item details from database
 			const dbItems = await prisma.albionItem.findMany({
 				where: { itemId: { in: itemIds } }
 			});
 
-			// Fetch prices from Albion API
-			const apiResponse = await fetch(
-				`https://www.albion-online-data.com/api/v2/stats/prices/${itemIds.join(',')}.json?locations=Thetford&qualities=4`
-			);
-
-			if (!apiResponse.ok) throw new Error('Failed to fetch prices');
-			const prices: Array<{ item_id: string; sell_price_min: number }> = (await apiResponse.json()) as AlbionPrice[];
-
 			// Create response lines
 			const itemLines = await Promise.all(
 				itemIds.map(async (itemId) => {
 					const dbItem = dbItems.find((i) => i.itemId === itemId);
-					const price = prices.find((p) => p.item_id === itemId);
+
+					// Fetch prices from Albion API
+					const apiResponse = await fetch(
+						`https://europe.albion-online-data.com/api/v2/stats/history/${itemId}?time-scale=24&locations=Thetford,Bridgewatch,Martlock,FortSterling,Lymhurst`
+					);
+
+					if (!apiResponse.ok) throw new Error('Failed to fetch prices');
+
+					const apiData = (await apiResponse.json()) as AlbionDataClientReponse;
+
+					const prices = apiData.flatMap((market) => market.data);
+
+					// Calculate the average sale price of the items
+					const total = prices.reduce((sum, price) => sum + price.avg_price, 0);
+					const averageCost = total / prices.length;
+					totalCost += averageCost;
 
 					// Get item name and details
 					const itemDetails = dbItem ? `${dbItem.name} (T${dbItem.tier}.${dbItem.enchantment})` : 'Unknown Item';
 
-					const priceInfo = price ? `Price: ${price.sell_price_min.toLocaleString()} silver` : 'Price: Not available';
+					const priceInfo = averageCost ? `Price: ${averageCost.toLocaleString()} silver` : 'Price: Not available';
 
-					return `• ${itemDetails} - ${priceInfo}`;
+					return [
+						`• ${itemDetails} - ${priceInfo}\n`,
+						`https://europe.albion-online-data.com/api/v2/stats/history/${itemId}?time-scale=24&locations=Thetford,Bridgewatch,Martlock,FortSterling,Lymhurst`
+					];
 				})
 			);
-
-			// Calculate total cost
-			const totalCost = prices.reduce((sum, price) => sum + price.sell_price_min, 0);
 
 			// Create approval buttons
 			const approvalRow = new ActionRowBuilder<ButtonBuilder>().addComponents(

@@ -23,7 +23,7 @@ export class RegearApprovalHandler extends InteractionHandler {
 		this.container.logger.debug(`Parsing regear approval interaction with custom ID ${interaction.customId}`);
 
 		const [action, userId, totalCost] = interaction.customId.split(':');
-		if (!['regear-approve', 'regear-reject'].includes(action)) return this.none();
+		if (!['regear-approve-100', 'regear-approve-70', 'regear-reject'].includes(action)) return this.none();
 
 		if (!interaction.member) {
 			this.container.logger.error('Interaction member not found');
@@ -88,7 +88,7 @@ export class RegearApprovalHandler extends InteractionHandler {
 
 		this.container.logger.debug(`Handling regear with action ${data.action}`);
 
-		if (data.action === 'regear-approve') {
+		if (data.action === 'regear-approve-100' || data.action === 'regear-approve-70') {
 			const silverForRegear = parseInt(data.totalCost, 10); // TODO: Get this from configuration
 
 			// Update user's balance

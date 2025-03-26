@@ -8,29 +8,13 @@ import {
 	ButtonBuilder,
 	ButtonStyle,
 	InteractionContextType,
-	MessageFlags,
-	PermissionFlagsBits
+	MessageFlags
 } from 'discord.js';
 import { prisma } from '../client';
-
-interface AlbionDataClientMarketData {
-	item_count: number;
-	avg_price: number;
-	timestamp: string;
-}
-
-interface AlbionDataClientMarket {
-	location: string;
-	item_id: string;
-	quality: number;
-	data: AlbionDataClientMarketData[];
-}
-
-type AlbionDataClientReponse = AlbionDataClientMarket[];
+import { AlbionDataClientHistoricalReponse, AlbionItemCategory } from '../types';
 
 @ApplyOptions<Command.Options>({
-	description: 'Log a re-gear for a user',
-	requiredUserPermissions: [PermissionFlagsBits.Administrator]
+	description: 'Make a request for a regear'
 })
 export class RegearCommand extends Command {
 	// Register Chat Input and Context Menu command
@@ -49,6 +33,12 @@ export class RegearCommand extends Command {
 					name: 'user',
 					description: 'The user to re-gear',
 					type: ApplicationCommandOptionType.User,
+					required: true
+				},
+				{
+					name: 'death_screenshot',
+					description: 'Screenshot of the death log with gear',
+					type: ApplicationCommandOptionType.Attachment,
 					required: true
 				},
 				{
@@ -98,6 +88,8 @@ export class RegearCommand extends Command {
 
 		// Get the user and gear
 		const user = interaction.options.getUser('user', true);
+		const screenshot = interaction.options.getAttachment('death_screenshot', true);
+
 		const items = {
 			helmet: interaction.options.getString('helmet', false),
 			body: interaction.options.getString('body', false),
@@ -129,34 +121,36 @@ export class RegearCommand extends Command {
 
 					if (!apiResponse.ok) throw new Error('Failed to fetch prices');
 
-					const apiData = (await apiResponse.json()) as AlbionDataClientReponse;
+					const apiData = (await apiResponse.json()) as AlbionDataClientHistoricalReponse;
 
+					// In the price calculation section:
 					const prices = apiData.flatMap((market) => market.data);
+					const averageCost = prices.length > 0 ? prices.reduce((sum, price) => sum + price.avg_price, 0) / prices.length : 0;
 
-					// Calculate the average sale price of the items
-					const total = prices.reduce((sum, price) => sum + price.avg_price, 0);
-					const averageCost = total / prices.length;
-					totalCost += averageCost;
+					// Ensure totalCost is always a valid number
+					totalCost += averageCost || 0;
 
 					// Get item name and details
 					const itemDetails = dbItem ? `${dbItem.name} (T${dbItem.tier}.${dbItem.enchantment})` : 'Unknown Item';
 
 					const priceInfo = averageCost ? `Price: ${averageCost.toLocaleString()} silver` : 'Price: Not available';
 
-					return [
-						`• ${itemDetails} - ${priceInfo}\n`,
-						`https://europe.albion-online-data.com/api/v2/stats/history/${itemId}?time-scale=24&locations=Thetford,Bridgewatch,Martlock,FortSterling,Lymhurst`
-					];
+					return `• ${itemDetails} - ${priceInfo}`;
 				})
 			);
 
 			// Create approval buttons
 			const approvalRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
 				new ButtonBuilder()
-					.setCustomId(`regear-approve:${user.id}:${totalCost}`)
+					.setCustomId(`regear-approve-100:${user.id}:${totalCost}`)
 					.setLabel('Approve')
 					.setStyle(ButtonStyle.Success)
 					.setEmoji('✅'),
+				new ButtonBuilder()
+					.setCustomId(`regear-approve-70:${user.id}:${totalCost * 0.7}`)
+					.setLabel('Approve - 70%')
+					.setStyle(ButtonStyle.Success)
+					.setEmoji('⚠️'),
 				new ButtonBuilder()
 					.setCustomId(`regear-reject:${user.id}:${totalCost}`)
 					.setLabel('Deny')
@@ -170,7 +164,7 @@ export class RegearCommand extends Command {
 					...itemLines,
 					`\n`,
 					`**Total Estimated Cost:** ${totalCost.toLocaleString()} silver`,
-					`_Prices from Thetford (Quality: Excellent)_`
+					`[View Screenshot](${screenshot.url})`
 				].join('\n'),
 				components: [approvalRow]
 			});
@@ -214,6 +208,25 @@ export class RegearCommand extends Command {
 
 		if (enchantment && !isNaN(enchantment)) {
 			filters.push({ enchantment });
+		}
+
+		// Determine category based on focused option
+		const focusedOptionName = focusedOption.name;
+		const categoryMap: Record<string, AlbionItemCategory[]> = {
+			helmet: [AlbionItemCategory.HELMET],
+			body: [AlbionItemCategory.ARMOR],
+			boots: [AlbionItemCategory.SHOES],
+			mainweapon: [AlbionItemCategory.MAIN_ONE_HANDED, AlbionItemCategory.MAIN_TWO_HANDED],
+			offhand: [AlbionItemCategory.OFFHAND]
+		};
+
+		const categories = categoryMap[focusedOptionName] || [];
+		if (categories.length > 0) {
+			filters.push({
+				OR: categories.map((category) => ({
+					itemId: { contains: category }
+				}))
+			});
 		}
 
 		try {

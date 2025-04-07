@@ -162,7 +162,6 @@ export class RegearCommand extends Command {
 				content: [
 					`**Regear Request for ${user.displayName}**`,
 					...itemLines,
-					`\n`,
 					`**Total Estimated Cost:** ${totalCost.toLocaleString()} silver`,
 					`[View Screenshot](${screenshot.url})`
 				].join('\n'),

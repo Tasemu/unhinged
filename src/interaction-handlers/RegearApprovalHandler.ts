@@ -22,7 +22,7 @@ export class RegearApprovalHandler extends InteractionHandler {
 		if (!interaction.customId.startsWith('regear-')) return this.none();
 		this.container.logger.debug(`Parsing regear approval interaction with custom ID ${interaction.customId}`);
 
-		const [action, userId, totalCost] = interaction.customId.split(':');
+		const [action, regearRequestId] = interaction.customId.split(':');
 		if (!['regear-approve-100', 'regear-approve-70', 'regear-reject'].includes(action)) return this.none();
 
 		if (!interaction.member) {
@@ -30,11 +30,11 @@ export class RegearApprovalHandler extends InteractionHandler {
 			return this.none();
 		}
 
-		return this.some({ action, userId, member: interaction.member, totalCost });
+		return this.some({ action, regearRequestId, member: interaction.member });
 	}
 
-	public async run(interaction: ButtonInteraction, data: { action: string; userId: string; member: GuildMember; totalCost: string }) {
-		this.container.logger.debug(`Attempting to handle regear for ${data.userId}`);
+	public async run(interaction: ButtonInteraction, data: { action: string; regearRequestId: string; member: GuildMember }) {
+		this.container.logger.debug(`Attempting to handle regear request: ${data.regearRequestId}`);
 
 		// Get lootsplit modifier from configuration
 		const configuration = await prisma.configuration.findUnique({
@@ -49,6 +49,19 @@ export class RegearApprovalHandler extends InteractionHandler {
 			});
 		}
 
+		const regearRequest = await prisma.regearRequest.findUnique({
+			where: { id: data.regearRequestId }
+		});
+
+		if (!regearRequest) {
+			this.container.logger.error('Regear request not found:', data.regearRequestId);
+			return interaction.reply({
+				content: '❌ Regear request not found',
+				flags: [MessageFlags.Ephemeral]
+			});
+		}
+
+		const { userId, silver: totalCost } = regearRequest;
 		const roles = (data.member.roles as GuildMemberRoleManager).cache;
 
 		if (!roles.has(configuration.lootSplitAuthRoleId)) {
@@ -88,14 +101,32 @@ export class RegearApprovalHandler extends InteractionHandler {
 
 		this.container.logger.debug(`Handling regear with action ${data.action}`);
 
-		if (data.action === 'regear-approve-100' || data.action === 'regear-approve-70') {
-			const silverForRegear = parseInt(data.totalCost, 10); // TODO: Get this from configuration
-
+		if (data.action === 'regear-approve-100') {
 			// Update user's balance
 			await prisma.payoutAccount.upsert({
-				where: { userId: data.userId },
-				update: { balance: { increment: silverForRegear } },
-				create: { userId: data.userId, balance: silverForRegear, guildId: data.member.guild.id }
+				where: { userId: userId },
+				update: { balance: { increment: totalCost } },
+				create: { userId: userId, balance: totalCost, guildId: data.member.guild.id }
+			});
+
+			// Update the regear request status
+			await prisma.regearRequest.update({
+				where: { id: data.regearRequestId },
+				data: { approved: true }
+			});
+		} else if (data.action === 'regear-approve-70') {
+			// Update user's balance with 70% of the total cost
+			const seventyPercent = Math.floor(totalCost * 0.7);
+			await prisma.payoutAccount.upsert({
+				where: { userId: userId },
+				update: { balance: { increment: seventyPercent } },
+				create: { userId: userId, balance: seventyPercent, guildId: data.member.guild.id }
+			});
+
+			// Update the regear request status
+			await prisma.regearRequest.update({
+				where: { id: data.regearRequestId },
+				data: { approved: true, reduced: true }
 			});
 		}
 

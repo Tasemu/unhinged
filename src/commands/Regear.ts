@@ -139,23 +139,28 @@ export class RegearCommand extends Command {
 				})
 			);
 
+			// Save the regear request to the database
+			const regearRequest = await prisma.regearRequest.create({
+				data: {
+					userId: user.id,
+					guildId: interaction.guild.id,
+					silver: totalCost
+				}
+			});
+
 			// Create approval buttons
 			const approvalRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
 				new ButtonBuilder()
-					.setCustomId(`regear-approve-100:${user.id}:${totalCost}`)
+					.setCustomId(`regear-approve-100:${regearRequest.id}`)
 					.setLabel('Approve')
 					.setStyle(ButtonStyle.Success)
 					.setEmoji('✅'),
 				new ButtonBuilder()
-					.setCustomId(`regear-approve-70:${user.id}:${totalCost * 0.7}`)
+					.setCustomId(`regear-approve-70:${regearRequest.id}`)
 					.setLabel('Approve - 70%')
 					.setStyle(ButtonStyle.Success)
 					.setEmoji('⚠️'),
-				new ButtonBuilder()
-					.setCustomId(`regear-reject:${user.id}:${totalCost}`)
-					.setLabel('Deny')
-					.setStyle(ButtonStyle.Secondary)
-					.setEmoji('❌')
+				new ButtonBuilder().setCustomId(`regear-reject:${regearRequest.id}`).setLabel('Deny').setStyle(ButtonStyle.Secondary).setEmoji('❌')
 			);
 
 			return interaction.reply({
@@ -170,7 +175,7 @@ export class RegearCommand extends Command {
 		} catch (error) {
 			this.container.logger.error('Regear command failed:', error);
 			return interaction.reply({
-				content: 'Failed to fetch price data. Please try again later.',
+				content: 'Regear request failed due to internal error. Please notify an officer.',
 				flags: [MessageFlags.Ephemeral]
 			});
 		}

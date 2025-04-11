@@ -43,35 +43,35 @@ export class RegearCommand extends Command {
 				},
 				{
 					name: 'helmet',
-					description: 'The helmet to re-gear',
+					description: 'E.G: 6.2 Soldier Helmet',
 					type: ApplicationCommandOptionType.String,
 					required: false,
 					autocomplete: true
 				},
 				{
 					name: 'body',
-					description: 'The body-armour to re-gear',
+					description: 'E.G: 6.2 Soldier Armor',
 					type: ApplicationCommandOptionType.String,
 					required: false,
 					autocomplete: true
 				},
 				{
 					name: 'boots',
-					description: 'The boots to re-gear',
+					description: 'E.G: 6.2 Soldier Boots',
 					type: ApplicationCommandOptionType.String,
 					required: false,
 					autocomplete: true
 				},
 				{
 					name: 'mainweapon',
-					description: 'The main weapon to re-gear',
+					description: 'E.G: 6.2 Broad Sword',
 					type: ApplicationCommandOptionType.String,
 					required: false,
 					autocomplete: true
 				},
 				{
 					name: 'offhand',
-					description: 'The off-hand to re-gear',
+					description: 'E.G: 6.2 Torch',
 					type: ApplicationCommandOptionType.String,
 					required: false,
 					autocomplete: true
@@ -232,6 +232,16 @@ export class RegearCommand extends Command {
 				}))
 			});
 		}
+
+		// Add filter to exclude items below T7 equivalent (tier + enchantment >=7)
+		filters.push({
+			OR: [
+				{ tier: { gte: 7 }, enchantment: { gte: 0 } },
+				{ tier: 6, enchantment: { gte: 1 } },
+				{ tier: 5, enchantment: { gte: 2 } },
+				{ tier: 4, enchantment: { gte: 3 } }
+			]
+		});
 
 		try {
 			const items = await prisma.albionItem.findMany({

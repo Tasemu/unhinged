@@ -3,6 +3,8 @@ import { Command } from '@sapphire/framework';
 import { ApplicationIntegrationType, InteractionContextType, MessageFlags } from 'discord.js';
 import { prisma } from '../client';
 
+const IGNORED_USER_IDS = ['95537980663406592']; // Replace with actual user IDs to ignore
+
 @ApplyOptions<Command.Options>({
 	description: 'Get the top 10 members with the highest balance in the guild'
 })
@@ -29,6 +31,10 @@ export class GetLeaderboardCommand extends Command {
 		try {
 			const payoutAccounts = await prisma.payoutAccount.findMany({
 				orderBy: { balance: 'desc' },
+				where: {
+					guildId: interaction.guild.id,
+					userId: { not: { in: IGNORED_USER_IDS } }
+				},
 				take: 10
 			});
 

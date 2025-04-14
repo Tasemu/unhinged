@@ -27,6 +27,7 @@ model Configuration {
   guildId                  String  @unique
   trialRoleId              String?
   recruiterRoleId          String?
+  memberRoleId             String?
   recruiterChannelId       String?
   lootSplitAuthRoleId      String?
   lootSplitPercentModifier Float?

@@ -76,3 +76,39 @@ model AlbionItem {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
+
+model Composition {
+  id        String   @id @default(cuid())
+  guildId   String
+  name      String
+  userId    String
+  roles     String   @db.Text // List of roles separated by commas
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  events    Event[]
+}
+
+model Event {
+  id            String             @id @default(cuid())
+  guildId       String
+  userId        String
+  name          String
+  date          DateTime
+  messageId     String?
+  channelId     String?
+  composition   Composition        @relation(fields: [compositionId], references: [id])
+  compositionId String
+  participants  EventParticipant[]
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+}
+
+model EventParticipant {
+  id        String   @id @default(cuid())
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id])
+  userId    String
+  role      String // Role and index in the format "role:index"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

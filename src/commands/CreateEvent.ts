@@ -12,6 +12,7 @@ import {
 	MessageFlags
 } from 'discord.js';
 import { prisma } from '../client';
+import moment from 'moment-timezone';
 
 @ApplyOptions<Command.Options>({
 	description: 'Create a new event for group content'
@@ -37,13 +38,13 @@ export class CreateEventCommand extends Command {
 				},
 				{
 					name: 'date',
-					description: 'The date for the event (YYYY-MM-DD)',
+					description: 'Event date in UTC (YYYY-MM-DD)',
 					type: ApplicationCommandOptionType.String,
 					required: true
 				},
 				{
 					name: 'time',
-					description: 'The time for the event (HH:MM)',
+					description: 'Event time in UTC (HH:MM)',
 					type: ApplicationCommandOptionType.String,
 					required: true
 				},
@@ -65,25 +66,35 @@ export class CreateEventCommand extends Command {
 		if (!interaction.guild) return interaction.reply('This command only works in servers!');
 
 		const name = interaction.options.getString('name', true);
-		const date = interaction.options.getString('date', true);
-		const time = interaction.options.getString('time', true);
+		const dateInput = interaction.options.getString('date', true);
+		const timeInput = interaction.options.getString('time', true);
 
-		// Validate date and time format
-		if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !/^\d{2}:\d{2}$/.test(time)) {
+		// Parse as UTC using moment
+		const datetimeString = `${dateInput} ${timeInput}`;
+		const eventMoment = moment.tz(
+			datetimeString,
+			'YYYY-MM-DD HH:mm',
+			'UTC' // Force UTC timezone
+		);
+
+		// Validate input
+		if (!eventMoment.isValid()) {
 			return interaction.reply({
-				content: '❌ Invalid date or time format. Use YYYY-MM-DD for date and HH:MM for time.',
-				flags: MessageFlags.Ephemeral
+				content: '❌ Invalid date/time format! Use `YYYY-MM-DD` and `HH:MM` in UTC',
+				ephemeral: true
 			});
 		}
 
-		// Check if the date and time are in the future
-		const eventDate = new Date(`${date}T${time}`);
-		if (eventDate <= new Date()) {
+		// Check if in future
+		if (eventMoment.isBefore(moment().tz('UTC'))) {
 			return interaction.reply({
-				content: '❌ The event date and time must be in the future.',
-				flags: MessageFlags.Ephemeral
+				content: '❌ Event must be in the future (UTC time)!',
+				ephemeral: true
 			});
 		}
+
+		// Convert to Date object (UTC)
+		const eventDate = eventMoment.toDate();
 
 		const compositionId = interaction.options.getString('composition', true);
 
@@ -92,7 +103,7 @@ export class CreateEventCommand extends Command {
 				guildId: interaction.guild.id,
 				userId: interaction.user.id,
 				name: name,
-				date: new Date(`${date}T${time}`),
+				date: eventDate,
 				compositionId: compositionId
 			},
 			include: {
@@ -113,8 +124,12 @@ export class CreateEventCommand extends Command {
 			.setTitle(newEvent.name)
 			.setDescription(`**Event Details**`)
 			.addFields(
-				{ name: '📅 Date', value: `<t:${Math.floor(newEvent.date.getTime() / 1000)}:R>`, inline: true },
-				{ name: '🛠️ Composition', value: newEvent.composition.name, inline: true },
+				{
+					name: '📅 Date',
+					value: [`\`${eventMoment.format('YYYY-MM-DD HH:mm [UTC]')}\``, `(<t:${Math.floor(eventDate.getTime() / 1000)}:R>)`].join('\n'),
+					inline: false
+				},
+				{ name: '🛠️ Composition', value: newEvent.composition.name, inline: false },
 				{ name: '👥 Participants', value: '', inline: false }
 			)
 			.setFooter({ text: `Event ID: ${newEvent.id}` });

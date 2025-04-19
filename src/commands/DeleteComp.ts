@@ -1,6 +1,6 @@
 import { ApplyOptions } from '@sapphire/decorators';
 import { Command } from '@sapphire/framework';
-import { ApplicationCommandOptionType, ApplicationIntegrationType, AutocompleteInteraction, InteractionContextType } from 'discord.js';
+import { ApplicationCommandOptionType, ApplicationIntegrationType, AutocompleteInteraction, InteractionContextType, MessageFlags } from 'discord.js';
 import { prisma } from '../client';
 
 @ApplyOptions<Command.Options>({
@@ -47,10 +47,16 @@ export class DeleteCompCommand extends Command {
 				}
 			});
 
-			return interaction.reply(`✅ Composition deleted with name: ${deletedComposition.name}`);
+			return interaction.reply({
+				content: `✅ Composition deleted with name: ${deletedComposition.name}`,
+				flags: MessageFlags.Ephemeral
+			});
 		} catch (error) {
 			this.container.logger.error('Delete composition error:', error);
-			return interaction.reply('❌ An error occurred while deleting the composition.');
+			return interaction.reply({
+				content: '❌ An error occurred while deleting the composition.',
+				flags: MessageFlags.Ephemeral
+			});
 		}
 	}
 

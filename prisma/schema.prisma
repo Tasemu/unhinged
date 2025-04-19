@@ -106,7 +106,7 @@ model Event {
 model EventParticipant {
   id        String   @id @default(cuid())
   eventId   String
-  event     Event    @relation(fields: [eventId], references: [id])
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
   userId    String
   role      String // Role and index in the format "role:index"
   createdAt DateTime @default(now())

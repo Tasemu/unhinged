@@ -8,7 +8,8 @@ import {
 	ButtonBuilder,
 	ButtonStyle,
 	EmbedBuilder,
-	InteractionContextType
+	InteractionContextType,
+	MessageFlags
 } from 'discord.js';
 import { prisma } from '../client';
 
@@ -69,13 +70,19 @@ export class CreateEventCommand extends Command {
 
 		// Validate date and time format
 		if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !/^\d{2}:\d{2}$/.test(time)) {
-			return interaction.reply('❌ Invalid date or time format. Use YYYY-MM-DD for date and HH:MM for time.');
+			return interaction.reply({
+				content: '❌ Invalid date or time format. Use YYYY-MM-DD for date and HH:MM for time.',
+				flags: MessageFlags.Ephemeral
+			});
 		}
 
 		// Check if the date and time are in the future
 		const eventDate = new Date(`${date}T${time}`);
 		if (eventDate <= new Date()) {
-			return interaction.reply('❌ The event date and time must be in the future.');
+			return interaction.reply({
+				content: '❌ The event date and time must be in the future.',
+				flags: MessageFlags.Ephemeral
+			});
 		}
 
 		const compositionId = interaction.options.getString('composition', true);
@@ -94,7 +101,10 @@ export class CreateEventCommand extends Command {
 		});
 
 		if (!newEvent) {
-			return interaction.reply('❌ An error occurred while creating the event.');
+			return interaction.reply({
+				content: '❌ An error occurred while creating the event.',
+				flags: MessageFlags.Ephemeral
+			});
 		}
 
 		// Build the embed
@@ -109,8 +119,9 @@ export class CreateEventCommand extends Command {
 			)
 			.setFooter({ text: `Event ID: ${newEvent.id}` });
 
+		const rolesArray = newEvent.composition.roles.split(',').map((role) => role.trim());
 		// Add role slots
-		newEvent.composition.roles.split(', ').forEach((role) => {
+		rolesArray.forEach((role) => {
 			eventEmbed.addFields({
 				name: `⬜ ${role}`,
 				value: ``,
@@ -121,7 +132,9 @@ export class CreateEventCommand extends Command {
 		// Create action buttons
 		const buttons = new ActionRowBuilder<ButtonBuilder>().addComponents(
 			new ButtonBuilder().setCustomId(`event-signup:${newEvent.id}`).setLabel('Sign Up').setStyle(ButtonStyle.Primary),
-			new ButtonBuilder().setCustomId(`event-leave:${newEvent.id}`).setLabel('Leave Event').setStyle(ButtonStyle.Danger)
+			new ButtonBuilder().setCustomId(`event-leave:${newEvent.id}`).setLabel('Leave Event').setStyle(ButtonStyle.Danger),
+			new ButtonBuilder().setCustomId(`event-cancel:${newEvent.id}`).setLabel('Cancel Event').setStyle(ButtonStyle.Secondary),
+			new ButtonBuilder().setCustomId(`event-finish:${newEvent.id}`).setLabel('Finish Event').setStyle(ButtonStyle.Success)
 		);
 
 		// In your chatInputRun after sending the reply:

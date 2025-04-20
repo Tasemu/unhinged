@@ -30,6 +30,14 @@ export class EventSignupHandler extends InteractionHandler {
 			});
 		}
 
+		if (!event.composition) {
+			this.container.logger.error('Composition not found for event:', eventId);
+			return interaction.reply({
+				content: '❌ Composition not found for this event.',
+				flags: MessageFlags.Ephemeral
+			});
+		}
+
 		// In your signup interaction handler
 		const roles = event.composition.roles.split(', ');
 		const availableSlots = roles

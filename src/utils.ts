@@ -12,7 +12,7 @@ export async function updateEventEmbed(eventId: string) {
 		}
 	});
 
-	if (!event || !event.messageId || !event.channelId) return;
+	if (!event || !event.messageId || !event.channelId || !event.composition) return;
 
 	const channel = await container.client.channels.fetch(event.channelId);
 	if (!channel?.isTextBased()) return;

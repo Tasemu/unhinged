@@ -96,8 +96,8 @@ model Event {
   date          DateTime
   messageId     String?
   channelId     String?
-  composition   Composition        @relation(fields: [compositionId], references: [id])
-  compositionId String
+  composition   Composition?       @relation(fields: [compositionId], references: [id], onDelete: SetNull)
+  compositionId String?
   participants  EventParticipant[]
   createdAt     DateTime           @default(now())
   updatedAt     DateTime           @updatedAt

@@ -98,20 +98,33 @@ export class CreateEventCommand extends Command {
 
 		const compositionId = interaction.options.getString('composition', true);
 
+		// Check if the composition exists
+		const composition = await prisma.composition.findUnique({
+			where: { id: compositionId }
+		});
+
+		if (!composition) {
+			this.container.logger.error('Composition not found:', compositionId);
+			return interaction.reply({
+				content: '❌ Composition not found! Please create a composition first.',
+				flags: MessageFlags.Ephemeral
+			});
+		}
+
 		const newEvent = await prisma.event.create({
 			data: {
 				guildId: interaction.guild.id,
 				userId: interaction.user.id,
 				name: name,
 				date: eventDate,
-				compositionId: compositionId
+				compositionId: composition.id
 			},
 			include: {
 				composition: true
 			}
 		});
 
-		if (!newEvent) {
+		if (!newEvent || !newEvent.composition) {
 			return interaction.reply({
 				content: '❌ An error occurred while creating the event.',
 				flags: MessageFlags.Ephemeral

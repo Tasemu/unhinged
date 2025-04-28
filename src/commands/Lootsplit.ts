@@ -30,13 +30,13 @@ export class LootSplitCommand extends Command {
 			options: [
 				{
 					name: 'silver',
-					description: 'The total silver to be split',
+					description: 'The estimated silver value from the loot split tab',
 					type: ApplicationCommandOptionType.Number,
 					required: true
 				},
 				{
 					name: 'silverbags',
-					description: 'The total silver collected from silver bags',
+					description: 'The silver collected from silver bags and donated to the guild for redistribution',
 					type: ApplicationCommandOptionType.Number,
 					required: true
 				},

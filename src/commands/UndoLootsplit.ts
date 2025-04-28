@@ -1,10 +1,11 @@
 import { ApplyOptions } from '@sapphire/decorators';
 import { Command } from '@sapphire/framework';
-import { ApplicationCommandOptionType, ApplicationIntegrationType, InteractionContextType, MessageFlags } from 'discord.js';
+import { ApplicationCommandOptionType, ApplicationIntegrationType, InteractionContextType, MessageFlags, PermissionFlagsBits } from 'discord.js';
 import { prisma } from '../client';
 
 @ApplyOptions<Command.Options>({
-	description: 'Undo a lootsplit and remove the appropriate silver from all participants'
+	description: 'Undo a lootsplit and remove the appropriate silver from all participants',
+	requiredUserPermissions: [PermissionFlagsBits.Administrator]
 })
 export class LootSplitCommand extends Command {
 	// Register Chat Input and Context Menu command
